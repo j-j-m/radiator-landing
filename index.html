@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radiator — Coming Soon</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    min-height: 100dvh; display: grid; place-items: center;
+    background: radial-gradient(ellipse at 30% 20%, #1a2233 0%, #0b0e14 60%);
+    color: #e8eaf0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    text-align: center; padding: 2rem;
+  }
+  main { max-width: 34rem; }
+  .mark {
+    font-size: 3.5rem; line-height: 1; margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 24px rgba(255, 120, 60, .35));
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 3rem); font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  p.tag { margin-top: 1rem; font-size: 1.05rem; color: #9aa3b5; letter-spacing: .02em; }
+  .bar {
+    margin: 2.5rem auto 0; width: 12rem; height: 2px; border-radius: 1px;
+    background: linear-gradient(90deg, transparent, #ff7a3c, transparent);
+    animation: glow 3s ease-in-out infinite;
+  }
+  @keyframes glow { 0%,100% { opacity:.4 } 50% { opacity:1 } }
+  footer { position: fixed; bottom: 1.25rem; left: 0; right: 0; font-size: .8rem; color: #566076; }
+</style>
+</head>
+<body>
+<main>
+  <div class="mark">🔥</div>
+  <h1>Radiator</h1>
+  <p class="tag">Something warm is on the way.</p>
+  <div class="bar"></div>
+</main>
+<footer>&copy; 2026 Radiator</footer>
+</body>
+</html>
