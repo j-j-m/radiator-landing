@@ -1,0 +1,14 @@
+index.html
+  h_2e249d121a4557 6-12,14-28,30-36,38-45,47,49-69,71-78,80-81,86-92,94-101,104-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "bcbd1d2aabd3ce827e65060b9a60c77ddeb8c5a6",
+  "prompts": {},
+  "humans": {
+    "h_2e249d121a4557": {
+      "author": "JJ Martin <martinjaco@gmail.com>"
+    }
+  }
+}
