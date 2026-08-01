@@ -3,42 +3,114 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Radiator — Coming Soon</title>
+<title>Radiator</title>
+<meta name="description" content="Radiator — coming soon.">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="Radiator">
+<meta property="og:description" content="Coming soon.">
+<meta name="theme-color" content="#0d1219">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='143.318 313.84 737.441 396.38'%3E%3Cg fill='%23e8edf5'%3E%3Cpath d='M508.51 313.84L584.57 313.84C584.69 313.837 584.803 313.895 584.87 313.994C584.936 314.094 584.948 314.22 584.9 314.33L419.09 710.01C419.034 710.137 418.909 710.22 418.77 710.22L342.06 710.22C341.94 710.223 341.827 710.165 341.76 710.066C341.694 709.966 341.682 709.84 341.73 709.73L508.19 314.05C508.246 313.923 508.371 313.84 508.51 313.84Z'/%3E%3Cpath d='M804.26 313.84L880.4 313.84C880.52 313.837 880.633 313.895 880.7 313.994C880.766 314.094 880.778 314.22 880.73 314.33L714.93 709.99C714.874 710.117 714.749 710.2 714.61 710.2L637.81 710.2C637.69 710.203 637.577 710.145 637.51 710.046C637.444 709.946 637.432 709.82 637.48 709.71L803.94 314.05C803.996 313.923 804.121 313.84 804.26 313.84Z'/%3E%3Cpath d='M247.616 466.387C246.314 495.065 221.925 517.254 193.142 515.946C164.359 514.639 142.081 490.332 143.384 461.653C144.686 432.975 169.075 410.786 197.858 412.093C226.641 413.401 248.919 437.708 247.616 466.387Z'/%3E%3Cpath d='M247.409 625.809C244.706 654.4 219.266 675.38 190.586 672.669C161.907 669.958 140.849 644.583 143.551 615.991C146.254 587.4 171.694 566.42 200.374 569.131C229.053 571.842 250.111 597.217 247.409 625.809Z'/%3E%3C/g%3E%3C/svg%3E">
 <style>
-  :root { color-scheme: dark; }
-  * { margin: 0; box-sizing: border-box; }
+  /* Tokens lifted verbatim from plane/web/src/index.css `.dark` so this page and
+     the dashboard are the same product, not two designs that resemble each other. */
+  :root {
+    --background: hsl(215 28% 7%);
+    --foreground: hsl(213 33% 93%);
+    --card: hsl(215 21% 11%);
+    --primary: hsl(212 100% 67%);
+    --primary-foreground: hsl(0 0% 100%);
+    --muted-foreground: hsl(213 8% 58%);
+    --border: hsl(215 13% 21%);
+    --radius: 0.5rem;
+    color-scheme: dark;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
-    min-height: 100dvh; display: grid; place-items: center;
-    background: radial-gradient(ellipse at 30% 20%, #1a2233 0%, #0b0e14 60%);
-    color: #e8eaf0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    text-align: center; padding: 2rem;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 2rem 1.5rem;
   }
-  main { max-width: 34rem; }
-  .mark {
-    font-size: 3.5rem; line-height: 1; margin-bottom: 1.5rem;
-    filter: drop-shadow(0 0 24px rgba(255, 120, 60, .35));
+  main {
+    place-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 30rem;
+    width: 100%;
   }
+  .mark { width: clamp(4rem, 12vw, 5.75rem); height: auto; fill: var(--foreground); }
   h1 {
-    font-size: clamp(2rem, 6vw, 3rem); font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase;
+    margin-top: 2rem;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
-  p.tag { margin-top: 1rem; font-size: 1.05rem; color: #9aa3b5; letter-spacing: .02em; }
-  .bar {
-    margin: 2.5rem auto 0; width: 12rem; height: 2px; border-radius: 1px;
-    background: linear-gradient(90deg, transparent, #ff7a3c, transparent);
-    animation: glow 3s ease-in-out infinite;
+  .tag { margin-top: 0.75rem; font-size: 1.0625rem; color: var(--muted-foreground); }
+  .divider { width: 100%; height: 1px; background: var(--border); margin: 2.5rem 0 1.75rem; }
+
+  .gate { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.875rem; }
+  button {
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--primary-foreground);
+    background: var(--primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.625rem 1.25rem;
+    cursor: pointer;
+    transition: opacity .15s ease;
+    display: inline-flex; align-items: center; gap: 0.5rem;
   }
-  @keyframes glow { 0%,100% { opacity:.4 } 50% { opacity:1 } }
-  footer { position: fixed; bottom: 1.25rem; left: 0; right: 0; font-size: .8rem; color: #566076; }
+  button:hover { opacity: .9; }
+  button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .note {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+    line-height: 1.5;
+    max-width: 24rem;
+    min-height: 2.25rem;
+  }
+  .note[hidden] { display: none; }
+  footer { place-self: center; font-size: 0.8125rem; color: var(--muted-foreground); padding-top: 2.5rem; }
 </style>
 </head>
 <body>
 <main>
-  <div class="mark">🔥</div>
+  <svg class="mark" viewBox="143.318 313.84 737.441 396.38" role="img" aria-label="Radiator">
+    <path d="M508.51 313.84L584.57 313.84C584.69 313.837 584.803 313.895 584.87 313.994C584.936 314.094 584.948 314.22 584.9 314.33L419.09 710.01C419.034 710.137 418.909 710.22 418.77 710.22L342.06 710.22C341.94 710.223 341.827 710.165 341.76 710.066C341.694 709.966 341.682 709.84 341.73 709.73L508.19 314.05C508.246 313.923 508.371 313.84 508.51 313.84Z"/>
+    <path d="M804.26 313.84L880.4 313.84C880.52 313.837 880.633 313.895 880.7 313.994C880.766 314.094 880.778 314.22 880.73 314.33L714.93 709.99C714.874 710.117 714.749 710.2 714.61 710.2L637.81 710.2C637.69 710.203 637.577 710.145 637.51 710.046C637.444 709.946 637.432 709.82 637.48 709.71L803.94 314.05C803.996 313.923 804.121 313.84 804.26 313.84Z"/>
+    <path d="M247.616 466.387C246.314 495.065 221.925 517.254 193.142 515.946C164.359 514.639 142.081 490.332 143.384 461.653C144.686 432.975 169.075 410.786 197.858 412.093C226.641 413.401 248.919 437.708 247.616 466.387Z"/>
+    <path d="M247.409 625.809C244.706 654.4 219.266 675.38 190.586 672.669C161.907 669.958 140.849 644.583 143.551 615.991C146.254 587.4 171.694 566.42 200.374 569.131C229.053 571.842 250.111 597.217 247.409 625.809Z"/>
+  </svg>
+
   <h1>Radiator</h1>
-  <p class="tag">Something warm is on the way.</p>
-  <div class="bar"></div>
+  <p class="tag">Coming soon.</p>
+
+  <div class="divider"></div>
+
+  <div class="gate">
+    <button id="signin" aria-describedby="note">Sign in</button>
+    <p class="note" id="note" role="status">Access is invite&#8209;only.</p>
+  </div>
 </main>
 <footer>&copy; 2026 Radiator</footer>
+
+<script>
+  // Deliberately does NOT attempt to authenticate. The real gate is a Bearer
+  // credential checked by the plane against org membership; a static page
+  // cannot enforce that, and a client-side allow-list would only look like
+  // security. This says so plainly rather than pretending.
+  document.getElementById('signin').addEventListener('click', function () {
+    document.getElementById('note').textContent =
+      'Sign-in opens when the plane is deployed. Your account is already on the list.';
+  });
+</script>
 </body>
 </html>
