@@ -11,8 +11,7 @@
 <meta name="theme-color" content="#0d1219">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='143.318 313.84 737.441 396.38'%3E%3Cg fill='%23e8edf5'%3E%3Cpath d='M508.51 313.84L584.57 313.84C584.69 313.837 584.803 313.895 584.87 313.994C584.936 314.094 584.948 314.22 584.9 314.33L419.09 710.01C419.034 710.137 418.909 710.22 418.77 710.22L342.06 710.22C341.94 710.223 341.827 710.165 341.76 710.066C341.694 709.966 341.682 709.84 341.73 709.73L508.19 314.05C508.246 313.923 508.371 313.84 508.51 313.84Z'/%3E%3Cpath d='M804.26 313.84L880.4 313.84C880.52 313.837 880.633 313.895 880.7 313.994C880.766 314.094 880.778 314.22 880.73 314.33L714.93 709.99C714.874 710.117 714.749 710.2 714.61 710.2L637.81 710.2C637.69 710.203 637.577 710.145 637.51 710.046C637.444 709.946 637.432 709.82 637.48 709.71L803.94 314.05C803.996 313.923 804.121 313.84 804.26 313.84Z'/%3E%3Cpath d='M247.616 466.387C246.314 495.065 221.925 517.254 193.142 515.946C164.359 514.639 142.081 490.332 143.384 461.653C144.686 432.975 169.075 410.786 197.858 412.093C226.641 413.401 248.919 437.708 247.616 466.387Z'/%3E%3Cpath d='M247.409 625.809C244.706 654.4 219.266 675.38 190.586 672.669C161.907 669.958 140.849 644.583 143.551 615.991C146.254 587.4 171.694 566.42 200.374 569.131C229.053 571.842 250.111 597.217 247.409 625.809Z'/%3E%3C/g%3E%3C/svg%3E">
 <style>
-  /* Tokens lifted verbatim from plane/web/src/index.css `.dark` so this page and
-     the dashboard are the same product, not two designs that resemble each other. */
+  /* Shared palette. Keep in step with the app's dark theme. */
   :root {
     --background: hsl(215 28% 7%);
     --foreground: hsl(213 33% 93%);
@@ -103,13 +102,11 @@
 <footer>&copy; 2026 Radiator</footer>
 
 <script>
-  // Deliberately does NOT attempt to authenticate. The real gate is a Bearer
-  // credential checked by the plane against org membership; a static page
-  // cannot enforce that, and a client-side allow-list would only look like
-  // security. This says so plainly rather than pretending.
+  // Says nothing about how sign-in works, what it runs on, or whether any
+  // particular visitor has access. A public page has no way to know the last
+  // one, and the first two are nobody's business.
   document.getElementById('signin').addEventListener('click', function () {
-    document.getElementById('note').textContent =
-      'Sign-in opens when the plane is deployed. Your account is already on the list.';
+    document.getElementById('note').textContent = 'Not open yet.';
   });
 </script>
 </body>
