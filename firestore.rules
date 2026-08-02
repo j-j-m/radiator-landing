@@ -1,0 +1,53 @@
+rules_version = '2';
+
+// Access rules for the interest list behind the sign-in button.
+//
+// This collection holds personal data, so the posture is deny-by-default and
+// every allowance below is written out rather than inherited. Two decisions do
+// most of the work:
+//
+//   * `get` is granted, `list` never is. A signed-in visitor can read back their
+//     own document, but the collection cannot be queried, so holding one valid
+//     account does not let anyone enumerate everyone else. This is the failure
+//     mode that leaks address lists, and it is worth being explicit about.
+//
+//   * The document id IS the caller's uid, which makes `uid == request.auth.uid`
+//     the entire authorisation check. There is no addressable path to another
+//     person's document, so there is nothing to get subtly wrong later.
+//
+// Records are write-once: no update, no delete. Someone who signed in cannot
+// rewrite their entry, and cannot clobber anyone else's.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /signups/{uid} {
+
+      allow get: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    // Keep only what identifies an interested person. Matching
+                    // the key set exactly stops a client from quietly attaching
+                    // extra fields to a document we then have to store forever.
+                    && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'createdAt'])
+                    && request.resource.data.uid == uid
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() <= 320
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() <= 200
+                    // The server's clock, not the caller's, so the timestamp is
+                    // worth something. The client must send a server timestamp.
+                    && request.resource.data.createdAt == request.time;
+
+      // Spelled out, including `list`, so that widening any of these is a
+      // deliberate edit rather than an accident of omission.
+      allow list, update, delete: if false;
+    }
+
+    // Everything not named above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -69,6 +69,16 @@
   }
   button:hover { opacity: .9; }
   button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  /* The button spends real time waiting on a pop-up window, so the waiting
+     state has to look like a state rather than like an unresponsive button. */
+  button:disabled, button:disabled:hover { opacity: .5; cursor: default; }
+  /* Signing out is a way back, not an invitation, so it recedes. */
+  .quiet {
+    color: var(--muted-foreground);
+    background: transparent;
+    border: 1px solid var(--border);
+  }
+  .quiet:hover { opacity: 1; color: var(--foreground); }
   .note {
     font-size: 0.8125rem;
     color: var(--muted-foreground);
@@ -76,7 +86,9 @@
     max-width: 24rem;
     min-height: 2.25rem;
   }
-  .note[hidden] { display: none; }
+  /* Buttons are inline-flex, which would otherwise outrank the hidden
+     attribute and leave a "hidden" control on screen. */
+  [hidden] { display: none !important; }
   footer { place-self: center; font-size: 0.8125rem; color: var(--muted-foreground); padding-top: 2.5rem; }
 </style>
 </head>
@@ -95,19 +107,169 @@
   <div class="divider"></div>
 
   <div class="gate">
-    <button id="signin" aria-describedby="note">Sign in</button>
-    <p class="note" id="note" role="status">Access is invite&#8209;only.</p>
+    <!-- Starts disabled and is switched on once sign-in is actually ready, so
+         the first click can never land on something that cannot answer it. -->
+    <button id="signin" aria-describedby="note" disabled>Sign in with Google</button>
+    <button id="signout" class="quiet" hidden>Sign out</button>
+    <p class="note" id="note" role="status" aria-live="polite" aria-atomic="true">Sign in to put your address on the early&#8209;access list. That&rsquo;s all it does &mdash; it isn&rsquo;t an account.</p>
+    <noscript><p class="note">Joining the list needs JavaScript.</p></noscript>
   </div>
 </main>
 <footer>&copy; 2026 Radiator</footer>
 
-<script>
-  // Says nothing about how sign-in works, what it runs on, or whether any
-  // particular visitor has access. A public page has no way to know the last
-  // one, and the first two are nobody's business.
-  document.getElementById('signin').addEventListener('click', function () {
-    document.getElementById('note').textContent = 'Not open yet.';
-  });
+<script type="module">
+  // The list this page writes to is an interest list and nothing more. The copy
+  // below is careful never to suggest a visitor has been let into anything,
+  // because they have not been.
+
+  // These values are public by design. They name which project the browser
+  // should talk to; they are identifiers, not credentials, and they grant
+  // nothing on their own. What a caller may actually read or write is decided
+  // by the security rules on the server. Please do not "fix" this by hiding it
+  // or moving it somewhere clever - it is meant to ship in the page.
+  const firebaseConfig = {
+    apiKey: 'AIzaSyBKx6PvvFdU50yd0ETTMyuNrEJFSyRQglU',
+    authDomain: 'radiator-signups.firebaseapp.com',
+    projectId: 'radiator-signups',
+    appId: '1:707960363590:web:5feda63f76a45710490847',
+  };
+
+  // Pinned to one exact release. A floating version would let somebody else's
+  // publish change how this page behaves without anyone here editing it.
+  const SDK = 'https://www.gstatic.com/firebasejs/12.17.0/';
+
+  const IDLE = "Sign in to put your address on the early‑access list. That’s all it does — it isn’t an account.";
+
+  const signInButton = document.getElementById('signin');
+  const signOutButton = document.getElementById('signout');
+  const note = document.getElementById('note');
+
+  // Every message goes through here, so the live region is the single place the
+  // page ever speaks from and a screen reader hears each outcome once.
+  function say(message) {
+    note.textContent = message;
+  }
+
+  start();
+
+  async function start() {
+    let modules;
+    try {
+      modules = await Promise.all([
+        import(SDK + 'firebase-app.js'),
+        import(SDK + 'firebase-auth.js'),
+        import(SDK + 'firebase-firestore.js'),
+      ]);
+    } catch {
+      // Offline, blocked, or the CDN is having a day. The page itself is fine,
+      // so say plainly what is not available instead of leaving a live button
+      // that quietly does nothing.
+      signInButton.disabled = true;
+      say("Sign‑in can’t load right now. Check your connection, or try again later.");
+      return;
+    }
+
+    const [
+      { initializeApp },
+      { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged },
+      { getFirestore, doc, getDoc, setDoc, serverTimestamp },
+    ] = modules;
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // What gets stored is only what makes an interested person contactable:
+    // who they are, where to reach them, and when they asked. Nothing else.
+    // The shape has to match the security rules exactly, because the rules
+    // reject any document carrying an extra field - which is the point.
+    async function remember(user) {
+      const record = doc(db, 'signups', user.uid);
+      const existing = await getDoc(record);
+      // Entries are write-once by rule, so a second visit must not try again.
+      if (existing.exists()) return;
+      await setDoc(record, {
+        uid: user.uid,
+        email: (user.email || '').slice(0, 320),
+        name: (user.displayName || '').slice(0, 200),
+        createdAt: serverTimestamp(),
+      });
+    }
+
+    let busy = false;
+    function setBusy(state) {
+      busy = state;
+      signInButton.disabled = state;
+      signInButton.setAttribute('aria-busy', state ? 'true' : 'false');
+    }
+
+    signInButton.disabled = false;
+
+    signInButton.addEventListener('click', async () => {
+      // Two guards rather than one: the flag closes the gap between the click
+      // and the repaint, so an impatient double click cannot open two pop-ups.
+      if (busy) return;
+      setBusy(true);
+      say('Opening Google…');
+      try {
+        await signInWithPopup(auth, provider);
+        // Success is handled by the auth-state listener below, which is also
+        // what runs on a reload, so there is only one path to the done state.
+      } catch (error) {
+        setBusy(false);
+        const code = error && error.code;
+        if (code === 'auth/popup-blocked') {
+          say('Your browser blocked the sign‑in window. Allow pop‑ups for this page, then try again.');
+        } else if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+          // Closing the window is a decision, not a fault. Say nothing that
+          // reads like an error.
+          say('That was closed before it finished. Try again whenever you like.');
+        } else {
+          say("Sign‑in didn’t go through. Try again in a moment.");
+        }
+      }
+    });
+
+    signOutButton.addEventListener('click', () => {
+      // The listener below repaints once the sign-out actually lands.
+      signOutButton.disabled = true;
+      signOut(auth).catch(() => {
+        signOutButton.disabled = false;
+        say("Couldn’t sign out just now. Try again in a moment.");
+      });
+    });
+
+    // The listener, not the click, decides what the page shows. That way a
+    // returning visitor is told they are already on the list rather than being
+    // asked a second time.
+    let hadUser = false;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setBusy(false);
+        signInButton.hidden = false;
+        signOutButton.hidden = true;
+        signOutButton.disabled = false;
+        // Signing out ends the session; it does not take the address back off
+        // the list. Saying so is more honest than letting people assume.
+        say(hadUser ? "Signed out. Your address stays on the list." : IDLE);
+        return;
+      }
+
+      hadUser = true;
+      signInButton.hidden = true;
+      signOutButton.hidden = false;
+      say('One moment…');
+
+      try {
+        await remember(user);
+        say(user.email ? "You’re on the list — " + user.email + "." : "You’re on the list.");
+      } catch {
+        say("You’re signed in, but your address didn’t save. Reload and try again in a moment.");
+      }
+    });
+  }
 </script>
 </body>
 </html>
