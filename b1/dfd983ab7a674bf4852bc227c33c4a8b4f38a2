@@ -1,0 +1,14 @@
+index.html
+  h_2e249d121a4557 14,105-107,109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "b1dfd983ab7a674bf4852bc227c33c4a8b4f38a2",
+  "prompts": {},
+  "humans": {
+    "h_2e249d121a4557": {
+      "author": "JJ Martin <martinjaco@gmail.com>"
+    }
+  }
+}
