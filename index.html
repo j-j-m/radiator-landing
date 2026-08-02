@@ -109,9 +109,9 @@
   <div class="gate">
     <!-- Starts disabled and is switched on once sign-in is actually ready, so
          the first click can never land on something that cannot answer it. -->
-    <button id="signin" aria-describedby="note" disabled>Sign in with Google</button>
+    <button id="signin" aria-describedby="note" disabled>Join with Google</button>
     <button id="signout" class="quiet" hidden>Sign out</button>
-    <p class="note" id="note" role="status" aria-live="polite" aria-atomic="true">Sign in to put your address on the early&#8209;access list. That&rsquo;s all it does &mdash; it isn&rsquo;t an account.</p>
+    <p class="note" id="note" role="status" aria-live="polite" aria-atomic="true">Get an invite when it opens.</p>
     <noscript><p class="note">Joining the list needs JavaScript.</p></noscript>
   </div>
 </main>
@@ -119,8 +119,8 @@
 
 <script type="module">
   // The list this page writes to is an interest list and nothing more. The copy
-  // below is careful never to suggest a visitor has been let into anything,
-  // because they have not been.
+  // never suggests a visitor has been let into anything, because they have not
+  // been — and it never explains mechanics the visitor didn't ask about.
 
   // These values are public by design. They name which project the browser
   // should talk to; they are identifiers, not credentials, and they grant
@@ -138,7 +138,7 @@
   // publish change how this page behaves without anyone here editing it.
   const SDK = 'https://www.gstatic.com/firebasejs/12.17.0/';
 
-  const IDLE = "Sign in to put your address on the early‑access list. That’s all it does — it isn’t an account.";
+  const IDLE = 'Get an invite when it opens.';
 
   const signInButton = document.getElementById('signin');
   const signOutButton = document.getElementById('signout');
@@ -165,7 +165,7 @@
       // so say plainly what is not available instead of leaving a live button
       // that quietly does nothing.
       signInButton.disabled = true;
-      say("Sign‑in can’t load right now. Check your connection, or try again later.");
+      say("Sign‑in can’t load right now. Try again later.");
       return;
     }
 
@@ -220,13 +220,12 @@
         setBusy(false);
         const code = error && error.code;
         if (code === 'auth/popup-blocked') {
-          say('Your browser blocked the sign‑in window. Allow pop‑ups for this page, then try again.');
+          say('Pop‑up blocked — allow pop‑ups, then try again.');
         } else if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-          // Closing the window is a decision, not a fault. Say nothing that
-          // reads like an error.
-          say('That was closed before it finished. Try again whenever you like.');
+          // Closing the window is a decision, not a fault.
+          say(IDLE);
         } else {
-          say("Sign‑in didn’t go through. Try again in a moment.");
+          say("Didn’t go through. Try again in a moment.");
         }
       }
     });
@@ -236,7 +235,7 @@
       signOutButton.disabled = true;
       signOut(auth).catch(() => {
         signOutButton.disabled = false;
-        say("Couldn’t sign out just now. Try again in a moment.");
+        say("Couldn’t sign out. Try again in a moment.");
       });
     });
 
@@ -251,9 +250,7 @@
         signInButton.hidden = false;
         signOutButton.hidden = true;
         signOutButton.disabled = false;
-        // Signing out ends the session; it does not take the address back off
-        // the list. Saying so is more honest than letting people assume.
-        say(hadUser ? "Signed out. Your address stays on the list." : IDLE);
+        say(hadUser ? 'Signed out.' : IDLE);
         return;
       }
 
@@ -266,7 +263,7 @@
         await remember(user);
         say(user.email ? "You’re on the list — " + user.email + "." : "You’re on the list.");
       } catch {
-        say("You’re signed in, but your address didn’t save. Reload and try again in a moment.");
+        say("That didn’t save. Reload and try again.");
       }
     });
   }
