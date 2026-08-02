@@ -1,0 +1,16 @@
+firestore.rules
+  h_2e249d121a4557 1-53
+index.html
+  h_2e249d121a4557 72-81,89-91,110-115,120-272
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "bfaac4e60b344a727761e2ee49015d1e000d575d",
+  "prompts": {},
+  "humans": {
+    "h_2e249d121a4557": {
+      "author": "JJ Martin <martinjaco@gmail.com>"
+    }
+  }
+}
