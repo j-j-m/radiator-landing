@@ -15,8 +15,17 @@ rules_version = '2';
 //     the entire authorisation check. There is no addressable path to another
 //     person's document, so there is nothing to get subtly wrong later.
 //
-// Records are write-once: no update, no delete. Someone who signed in cannot
-// rewrite their entry, and cannot clobber anyone else's.
+// Records are write-once, and self-delete-only: no update, ever, from any
+// caller. A signed-in visitor CAN remove their own record — see ADR-0013 in
+// radiator-engineering/radiator, ["Removal is a request, except from the
+// session that wrote it"](https://github.com/radiator-engineering/radiator/blob/main/docs/adr/0013-removal-is-a-request-except-from-the-session-that-wrote-it.md)
+// — but cannot rewrite it, and cannot touch anyone else's.
+//
+// NOTE ON DEPLOYMENT: this repo has no firebase.json, no .firebaserc and no CI
+// step that pushes this file anywhere. Merging a change here updates the
+// tracked source; it does NOT change what Firestore enforces until an
+// operator runs `firebase deploy --only firestore:rules --project
+// radiator-signups` (or the console equivalent) by hand.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -40,9 +49,14 @@ service cloud.firestore {
                     // worth something. The client must send a server timestamp.
                     && request.resource.data.createdAt == request.time;
 
-      // Spelled out, including `list`, so that widening any of these is a
-      // deliberate edit rather than an accident of omission.
-      allow list, update, delete: if false;
+      // `list` and `update` are spelled out rather than left to inherit deny,
+      // so widening either later is a deliberate edit, not an accident of
+      // omission. `delete` is the one exception, and it uses the exact same
+      // check `get` above already does: the record's own owner may remove it,
+      // nobody else may touch it, and the collection still cannot be queried
+      // to find out who else is on it.
+      allow list, update: if false;
+      allow delete: if request.auth != null && request.auth.uid == uid;
     }
 
     // Everything not named above.
